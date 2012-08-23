@@ -49,6 +49,7 @@ class Gettext
     private $path;
     private $files;
     private $loaded;
+    private $cookie_key;
 
     private $Cookie;
 
@@ -56,9 +57,10 @@ class Gettext
     const MAGIC2 = -569244523;
     const MAGIC3 = 2500072158;
 
-    public function setCookie ($Cookie)
+    public function setCookie ($Cookie, $key)
     {
         $this->Cookie = $Cookie;
+        $this->cookie_key = $key;
     }
 
     public function setPath ($path)
@@ -113,12 +115,8 @@ class Gettext
 
     public function setLanguage ($language = '', $store = false)
     {
-        if (!$language && !$this->language && !$this->default) {
+        if (!$language && !$this->language && !$this->default && !$this->Cookie) {
             return false;
-        }
-
-        if (!$language && !$this->language) {
-            $language = $this->default;
         }
 
         $language = mb_strtolower($language);
@@ -127,17 +125,19 @@ class Gettext
             return $this->load();
         }
 
-        if ($this->Cookie) {
+        if (!$language && $this->Cookie) {
             $cookie = $this->Cookie->get();
 
-            if (!$language) {
-                if (!isset($cookie['language']) || ($cookie['language'] === $this->language)) {
-                    return $this->load();
-                }
-
-                $language = $cookie['language'];
+            if (isset($cookie[$this->cookie_key]) && $cookie[$this->cookie_key]) {
+                $language = $cookie[$this->cookie_key];
             }
         }
+
+        if (!$language && !$this->default) {
+            return false;
+        }
+
+        $language = $language ?: $this->default;
 
         if (!in_array($language, $this->languages)) {
             return false;
@@ -148,7 +148,7 @@ class Gettext
         $this->load();
 
         if ($this->Cookie && $store) {
-            $this->Cookie->set(array('language' => $this->language));
+            $this->Cookie->set(array($this->cookie_key => $this->language));
         }
     }
 
