@@ -36,8 +36,8 @@ Usage
     $Gettext = new \ANS\Gettext\Gettext;
 
     $Gettext->setPath(__DIR__.'/languages/');
-
     $Gettext->setCookie($Cookie);
+    $Gettext->setDefaultLanguage('en');
 
     # if yours languages files are into folders (languages/en/gettext.mo, languages/es/gettext.mo)
     $Gettext->init();
