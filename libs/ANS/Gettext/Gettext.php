@@ -45,6 +45,7 @@ class Gettext
     private $cache_translations = array(); // original -> translation mapping
     private $languages = array();
     private $language = '';
+    private $default = '';
     private $path;
     private $files;
     private $loaded;
@@ -79,6 +80,10 @@ class Gettext
 
     public function loadLanguages ($files = false)
     {
+        if ($this->languages) {
+            return true;
+        }
+
         $this->files = $files;
 
         if ($files) {
@@ -101,8 +106,21 @@ class Gettext
         return $this->languages;
     }
 
+    public function setDefaultLanguage ($language)
+    {
+        $this->default = $language;
+    }
+
     public function setLanguage ($language = '', $store = false)
     {
+        if (!$language && !$this->language && !$this->default) {
+            return false;
+        }
+
+        if (!$language && !$this->language) {
+            $language = $this->default;
+        }
+
         $language = mb_strtolower($language);
 
         if ($this->language && ($language === $this->language)) {
@@ -124,7 +142,7 @@ class Gettext
         if (!in_array($language, $this->languages)) {
             return false;
         }
-        
+
         $this->language = $language;
 
         $this->load();
@@ -169,7 +187,9 @@ class Gettext
 
     public function load ()
     {
-        if ($this->loaded === $this->language) {
+        if (!$this->language) {
+            return false;
+        } else if ($this->loaded === $this->language) {
             return true;
         }
 
@@ -178,6 +198,10 @@ class Gettext
         if ($this->files) {
             $this->loadFile($this->path.$this->language.'.mo');
         } else {
+            if (!is_dir($this->path.$this->language)) {
+                return false;
+            }
+
             foreach (glob($this->path.$this->language.'/*.mo') as $file) {
                 $this->loadFile($file);
             }
