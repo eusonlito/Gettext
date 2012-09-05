@@ -32,11 +32,16 @@ Usage
     # https://github.com/eusonlito/Cookie
     include (__DIR__.'/libs/ANS/Cookie/Cookie.php');
 
-    $Cookie = new \ANS\Cookie\Cookie('language');
+    $Cookie = new \ANS\Cookie\Cookie;
+
+    $Cookie->setSettings(array(
+        'name' => 'language'
+    ));
+
     $Gettext = new \ANS\Gettext\Gettext;
 
     $Gettext->setPath(__DIR__.'/languages/');
-    $Gettext->setCookie($Cookie);
+    $Gettext->setCookie($Cookie, 'language');
     $Gettext->setDefaultLanguage('en');
 
     # if yours languages files are into folders (languages/en/gettext.mo, languages/es/gettext.mo)
